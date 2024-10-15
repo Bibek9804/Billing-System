@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Billing System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #e9ecef;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 2em;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            max-width: 1200px;
+            width: 100%;
+            padding: 20px;
+            background-color: #fff;
+            margin: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+
+        .item-form-container,
+        .form-container {
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+        }
+
+        h2 {
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            width: 98%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        #customerName,
+        #phoneNumber {
+            width: 20%;
+            padding: 4px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .real-time-date {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            border: 1px solid #ccc;
+            text-align: center;
+        }
+
+        .total-amount {
+            text-align: right;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        .print-button-container {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                padding: 10px;
+            }
+
+            .item-form-container,
+            .form-container {
+                padding: 15px;
+            }
+
+            h1 {
+                font-size: 1.5em;
+            }
+        }
+
+        @media (max-width: 480px) {
+            input[type="text"],
+            input[type="number"] {
+                font-size: 14px;
+            }
+
+            table {
+                display: block;
+                overflow-x: auto;
+            }
+
+            .total-amount {
+                font-size: 16px;
+            }
+
+            button {
+                width: 100%;
+                margin-top: 10px;
+            }
+        }
+
+        @media print {
+            .item-form-container,
+            .print-button-container {
+                display: none;
+            }
+
+            .action-column {
+                display: none;
+            }
+
+            body {
+                margin: 0;
+                padding: 0;
+            }
+
+            .container {
+                border: none;
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Billing System</h1>
+    <div class="container">
+        <div class="item-form-container">
+            <h2>Add Item</h2>
+            <form id="addItemForm" onkeypress="handleKeyPress(event)">
+                <label for="productName">Product Name</label>
+                <input type="text" id="productName" placeholder="Enter product name" required>
+                <label for="quantity">Quantity</label>
+                <input type="number" id="quantity" placeholder="Enter quantity" min="1" required>
+                <label for="price">Price Per Quantity</label>
+                <input type="number" id="price" placeholder="Enter price per quantity" min="0.01" step="0.01" required>
+                <button type="button" id="addButton" onclick="addItem()">Add</button>
+            </form>
+        </div>
+
+        <div class="form-container">
+            <h2>Bill Receipt</h2>
+            <div class="real-time-date" id="dateTime"></div>
+            <div id="companyDetails"></div>
+            <div class="customer-info" style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                <div class="customer-name" style="width: 50%;">
+                    <label for="customerName">Customer Name</label>
+                    <input type="text" id="customerName" placeholder="Enter name" required style="width: 50%;">
+                </div>
+                <div class="phone-number" style="width: 50%;">
+                    <label for="phoneNumber">Phone Number</label>
+                    <input type="text" id="phoneNumber" placeholder="Enter number" required style="width: 50%;">
+                </div>
+            </div>
+            <table id="itemsTable">
+                <thead>
+                    <tr>
+                        <th>S.No</th>
+                        <th>Product Name</th>
+                        <th>Quantity</th>
+                        <th>Rate (Rs)</th>
+                        <th>Total (Rs)</th>
+                        <th class="action-column">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="itemsList"></tbody>
+            </table>
+            <p class="total-amount">Total Amount: Rs <span id="totalAmount">0.00</span></p>
+            <div class="print-button-container">
+                <button type="button" onclick="clearItems()">Clear</button>
+                <button type="button" onclick="printBill()">Print</button>
+            </div>
+        </div>
+        
+
+    <script>
+        let totalAmount = 0;
+
+        function updateDateTime() {
+            const now = new Date();
+            const dateTimeString = now.toLocaleString();
+            document.getElementById('dateTime').innerText = `Date and Time: ${dateTimeString}`;
+        }
+        setInterval(updateDateTime, 1000);
+
+        window.onload = function () {
+            const companyName = localStorage.getItem('companyName') || "Your Company";
+            const address = localStorage.getItem('address') || "Your Address";
+            const mobile = localStorage.getItem('mobile') || "Your Mobile";
+            const companyDetails = `
+                <p><strong>Company Name:</strong> ${companyName}</p>
+                <p><strong>Address:</strong> ${address}</p>
+                <p><strong>Mobile No:</strong> ${mobile}</p>
+            `;
+            document.getElementById('companyDetails').innerHTML = companyDetails;
+        };
+
+        function addItem() {
+            const productName = document.getElementById('productName').value.trim();
+            const quantity = parseInt(document.getElementById('quantity').value);
+            const price = parseFloat(document.getElementById('price').value);
+
+            // Validate inputs
+            if (productName === '') {
+                alert('Product name cannot be empty.');
+                return;
+            }
+            if (quantity <= 0 || isNaN(quantity)) {
+                alert('Quantity must be a positive number.');
+                return;
+            }
+            if (price <= 0 || isNaN(price)) {
+                alert('Price must be a positive number.');
+                return;
+            }
+
+            const totalPrice = quantity * price;
+            totalAmount += totalPrice;
+
+            const itemsList = document.getElementById('itemsList');
+            const itemRow = document.createElement('tr');
+
+            // Calculate S.No based on current row count
+            const serialNumber = itemsList.rows.length + 1;
+
+            itemRow.innerHTML = `
+                <td>${serialNumber}</td>
+                <td>${productName}</td>
+                <td>${quantity}</td>
+                <td>${price.toFixed(2)}</td>
+                <td>${totalPrice.toFixed(2)}</td>
+                <td class="action-column">
+                    <i class="fas fa-edit" aria-label="Edit item" style="cursor: pointer;" onclick="editItem(this)"></i>
+                    <i class="fas fa-trash" aria-label="Delete item" style="cursor: pointer; color: red;" onclick="deleteItem(this)"></i>
+                </td>
+            `;
+            itemsList.appendChild(itemRow);
+            document.getElementById('totalAmount').innerText = totalAmount.toFixed(2);
+            clearInputFields();
+
+            document.getElementById('productName').focus();
+        }
+
+        function clearInputFields() {
+            document.getElementById('productName').value = '';
+            document.getElementById('quantity').value = '';
+            document.getElementById('price').value = '';
+        }
+
+        function clearItems() {
+            document.getElementById('itemsList').innerHTML = '';
+            totalAmount = 0;
+            document.getElementById('totalAmount').innerText = totalAmount.toFixed(2);
+        }
+
+        function printBill() {
+            const customerName = document.getElementById('customerName').value.trim();
+            if (customerName === '') {
+                alert('Please enter the customer name before printing.');
+                document.getElementById('customerName').focus(); // Optional: Focus on the input field
+                return; // Stop the function if the name is empty
+            }
+            window.print();
+        }
+
+        function deleteItem(element) {
+            const row = element.closest('tr');
+            const price = parseFloat(row.cells[4].innerText);
+            totalAmount -= price;
+            document.getElementById('totalAmount').innerText = totalAmount.toFixed(2);
+            row.remove();
+            updateSerialNumbers();
+        }
+
+        function editItem(element) {
+            const row = element.closest('tr');
+            const productName = row.cells[1].innerText;
+            const quantity = parseInt(row.cells[2].innerText);
+            const price = parseFloat(row.cells[3].innerText);
+
+            document.getElementById('productName').value = productName;
+            document.getElementById('quantity').value = quantity;
+            document.getElementById('price').value = price;
+
+            deleteItem(element);
+        }
+
+        function updateSerialNumbers() {
+            const itemsList = document.getElementById('itemsList');
+            for (let i = 0; i < itemsList.rows.length; i++) {
+                itemsList.rows[i].cells[0].innerText = i + 1; // Update S.No
+            }
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                addItem();
+            }
+        }
+    </script>
+</body>
+
+</html>
